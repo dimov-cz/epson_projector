@@ -21,6 +21,9 @@ ESCVPNET_HELLO_COMMAND = "ESC/VP.net\x10\x03\x00\x00\x00\x00"
 ESCVPNETNAME = "ESC/VP.net"
 ESCVPNAME = "ESC/VP"
 ERROR = "ERR"
+PWR_ON_STATE = "01"
+PWR_GOING_ON_STATE = "02"
+PWR_GOING_OFF_STATE = "03"
 PWR_OFF_STATE = "04"
 ESCVP_HELLO_COMMAND = "\r"
 COLON = ":"
@@ -90,9 +93,22 @@ EPSON_KEY_COMMANDS = {
     "CMODE_THEATRE": [("CMODE", "05")],
     "CMODE_THEATREBLACK": [("CMODE", "09")],
     "CMODE_THEATREBLACK2": [("CMODE", "0A")],
+
     "VOL_UP": [("KEY", "56")],
     "VOL_DOWN": [("KEY", "57")],
     "MUTE": [("KEY", "D8")],
+
+    "SOURCE_HDMI1": [('SOURCE', '30')],
+    "SOURCE_PC": [('SOURCE', '10')],
+    "SOURCE_COMPUTER": [('SOURCE', '11')],
+    "SOURCE_VIDEO": [('SOURCE', '40')],
+    "SOURCE_USBDISPLAY": [('SOURCE', '51')],
+    "SOURCE_USB": [('SOURCE', '52')],
+    "SOURCE_LAN": [('SOURCE', '53')],
+    "SOURCE_WFD": [('SOURCE', '56')],
+    "SOURCE_HDMI2": [('SOURCE', 'A0')],
+    "SOURCE_VIDEO2": [('SOURCE', '41')],
+
     "HDMI1": [("KEY", "4D")],
     "HDMI2": [("KEY", "40")],
     "PC": [("KEY", "44")],
@@ -100,6 +116,7 @@ EPSON_KEY_COMMANDS = {
     "USB": [("KEY", "85")],
     "LAN": [("KEY", "53")],
     "WFD": [("KEY", "56")],
+
     "PLAY": [("KEY", "D1")],
     "PAUSE": [("KEY", "D3")],
     "STOP": [("KEY", "D2")],
@@ -147,12 +164,14 @@ DEFAULT_SOURCES = {
 SOURCE_LIST = {
     "30": "HDMI1",
     "10": "PC",
+    "11": "COMPUTER",
     "40": "VIDEO",
+    "51": "USBDISPLAY",
     "52": "USB",
     "53": "LAN",
     "56": "WDF",
     "A0": "HDMI2",
-    "41": "VIDEO",
+    "41": "VIDEO2",
 }
 
 INV_SOURCES = {v: k for k, v in DEFAULT_SOURCES.items()}
