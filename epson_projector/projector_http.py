@@ -4,6 +4,9 @@ import logging
 import aiohttp
 import asyncio
 import async_timeout
+import hashlib
+import os
+from urllib.parse import urlparse
 
 from .const import (
     ACCEPT_ENCODING,
@@ -32,7 +35,7 @@ class ProjectorHttp:
     Control your projector with Python.
     """
 
-    def __init__(self, host, websession, port=80):
+    def __init__(self, host, websession, port=80, username=None, password=None):
         """
         Epson Projector controller.
 
@@ -50,9 +53,36 @@ class ProjectorHttp:
         }
         self._serial = None
         self.websession = websession
+        self.username = username
+        self.password = password
+        self.authHeaderIn = None #maybe TODO - reset this if 401 occurs
 
     def close(self):
         return
+    
+    async def create_digest_header(self, url, method):
+        if self.authHeaderIn is None:
+            async with self.websession.get(url) as response:
+                self.authHeaderIn = response.headers.get('WWW-Authenticate')
+                self.authHeaderNonce = 0
+
+        auth_parts = {part.split('=')[0]: part.split('=')[1].strip('"') for part in self.authHeaderIn.replace('Digest ', '').split(', ')}
+        realm = auth_parts['realm']
+        nonce = auth_parts['nonce'] #Epson fw seems to not care much about nonce checks
+        qop = auth_parts['qop']
+
+        ha1 = hashlib.md5(f"{self.username}:{realm}:{self.password}".encode()).hexdigest()
+        urlPath = urlparse(url).path
+        ha2 = hashlib.md5(f"{method}:{urlPath}".encode()).hexdigest()
+        cnonce = os.urandom(8).hex()
+        self.authHeaderNonce += 1
+        nc = f'{self.authHeaderNonce:08x}'
+
+        # response rule for qop=auth: MD5(HA1:nonce:nonceCount:cnonce:qop:HA2)
+        response_hash = hashlib.md5(f"{ha1}:{nonce}:{nc}:{cnonce}:{qop}:{ha2}".encode()).hexdigest()
+
+        auth_header = f'Digest username="{self.username}", realm="{realm}", nonce="{nonce}", uri="{urlPath}", response="{response_hash}", qop={qop}, nc={nc}, cnonce="{cnonce}"'
+        return auth_header
 
     async def get_property(self, command, timeout):
         """Get property state from device."""
@@ -80,6 +110,10 @@ class ProjectorHttp:
         try:
             with async_timeout.timeout(timeout):
                 url = "{url}{type}".format(url=self._http_url, type=type)
+
+                if (self.username is not None):
+                    self._headers["Authorization"] = await self.create_digest_header(url=url, method="GET")
+
                 async with self.websession.get(
                     url=url, params=params, headers=self._headers
                 ) as response:

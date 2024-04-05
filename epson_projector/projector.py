@@ -22,6 +22,8 @@ class Projector:
         websession=None,
         type=HTTP,
         timeout_scale=1.0,
+        username=None,
+        password=None,
     ):
         """
         Epson Projector controller.
@@ -40,7 +42,8 @@ class Projector:
             from .projector_http import ProjectorHttp
 
             self._projector = ProjectorHttp(
-                host=host, websession=websession, port=HTTP_PORT
+                host=host, websession=websession, port=HTTP_PORT,
+                username=username,  password=password
             )
         elif self._type == TCP:
             from .projector_tcp import ProjectorTcp
