@@ -16,6 +16,7 @@ from .const import (
     DIRECT_SEND,
     HTTP_OK,
     STATE_UNAVAILABLE,
+    STATE_COMMUNICATION_ERROR,
     POWER,
     EPSON_CODES,
     TCP_SERIAL_PORT,
@@ -119,7 +120,7 @@ class ProjectorHttp:
                 ) as response:
                     if response.status != HTTP_OK:
                         _LOGGER.warning("Error message %d from Epson.", response.status)
-                        return False
+                        raise ProjectorUnavailableError(STATE_COMMUNICATION_ERROR, response.status)
                     if type == JSON_QUERY:
                         return await response.json()
                     return response

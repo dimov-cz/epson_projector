@@ -239,3 +239,4 @@ CMODE_LIST_SET = {
 
 
 STATE_UNAVAILABLE = "unavailable"
+STATE_COMMUNICATION_ERROR = "communication-error"
